@@ -1,36 +1,9 @@
 import { useState } from 'react'
-import PropTypes from 'prop-types'; // Importar PropTypes
 import './App.css' 
 import confetti from 'canvas-confetti';
-
-const TURNS = {
-  X: 'x',
-  O: 'o'
-}
-
-const Square = ({ children, isSelected, updateBoard, index }) => {
-  const className = `square ${isSelected ? 'is-selected' : ''}`;
-
-  const handleClick = () => {
-    updateBoard(index);
-  }
-  return (
-    <div onClick={handleClick} className={className}>
-      {children}
-    </div>
-  )
-}
-
-const WINNER_COMBOS = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [6, 4, 2]
-]
+import { Square } from './components/Square';
+import TURNS from './constants';
+import WINNER_COMBOS from './constants';
 
 function App() {
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -134,13 +107,7 @@ function App() {
   )
 }
 
-// Definir los PropTypes para el componente Square
-Square.propTypes = {
-  children: PropTypes.node, // Cualquier nodo React, como texto o JSX
-  isSelected: PropTypes.bool, // Booleano que indica si está seleccionado
-  updateBoard: PropTypes.func.isRequired, // Función obligatoria
-  index: PropTypes.number.isRequired // Índice numérico obligatorio
-};
+
 
 export default App
 
