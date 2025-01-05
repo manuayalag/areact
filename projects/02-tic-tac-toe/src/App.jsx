@@ -1,40 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'; // Importar PropTypes
 import './App.css' 
 import confetti from 'canvas-confetti';
 import { Square } from './components/Square';
-import TURNS from './constants';
-import WINNER_COMBOS from './constants';
-
+import { TURNS } from './constants';
+import { checkWinner, checkEndGame } from './logic/board';
+import { saveGameToStorage, resetGameStorage } from './logic/storage';
 function App() {
-  const [board, setBoard] = useState(Array(9).fill(null));
-  const [turn, setTurn] = useState(TURNS.X);
-  const [winner, setWinner] = useState(null) // null no hay ganador, false es empate
+  console.log("render")
 
-  const checkWinner = (boardToCheck) => {
-    //revisar la combinación
-    for (const combo of WINNER_COMBOS) {
-      const [a, b, c] = combo
-      if (
-        boardToCheck[a] &&
-        boardToCheck[a] === boardToCheck[b] &&
-        boardToCheck[a] === boardToCheck[c]
-      ) {
-        return boardToCheck[a]
-      }
-    }
-    return null // si no hay ganador
-  }
+  const [board, setBoard] = useState( () => {
+    console.log("Inicializar estado del board")
+    const boardFromLocalStorage = window.localStorage.getItem('board')
+    return boardFromLocalStorage ? JSON.parse(boardFromLocalStorage) :
+    Array(9).fill(null)
+  });
+  const [turn, setTurn] = useState( () => {
+    const turnFromLocalStorage = window.localStorage.getItem('turn')
+    return turnFromLocalStorage ?? TURNS.X
+  });
+  const [winner, setWinner] = useState(null) // null no hay ganador, false es empate
 
   const resetGame = () => {
     setBoard(Array(9).fill(null))
     setTurn(TURNS.X)
     setWinner(null)
+    resetGameStorage()
   }
 
-  const checkEndGame = (newBoard) => {
-    //revisar si hay empate, si no hay mas espacios vacios en el juego
-    return newBoard.every((square) => square !== null)
-  }
   const updateBoard = (index) => {
     if (board[index] || winner) return //no se actualiza si ya tiene algo 
 
@@ -45,6 +38,9 @@ function App() {
     //actualizamos turno
     const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X
     setTurn(newTurn)
+    // guardar  aqui partida
+    saveGameToStorage({ newBoard, newTurn })
+
     //revisar si hay ganador
     const newWinner = checkWinner(newBoard);
     if (newWinner) {
@@ -55,7 +51,11 @@ function App() {
     }
 
   }
-  console.log(board)
+  
+  useEffect(() => {
+    console.log("useEffect")
+  }, []) 
+
   return (
     <main className='board'>
       <h1>TIC TAC TOE</h1>
@@ -107,7 +107,13 @@ function App() {
   )
 }
 
-
+// Definir los PropTypes para el componente Square
+Square.propTypes = {
+  children: PropTypes.node, // Cualquier nodo React, como texto o JSX
+  isSelected: PropTypes.bool, // Booleano que indica si está seleccionado
+  updateBoard: PropTypes.func.isRequired, // Función obligatoria
+  index: PropTypes.number.isRequired // Índice numérico obligatorio
+};
 
 export default App
 
